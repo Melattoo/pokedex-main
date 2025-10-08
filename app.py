@@ -128,17 +128,20 @@ if funcionalidades[selected_feature] == "comparacao_status":
                 )
                 fig.update_traces(fill="toself")
 
-                #exibe o grafico
-                st.plotly_chart(fig, use_container_width=True)
-
-                #imagem do pokemon
-                col_img1, col_img2 = st.columns(2)
-                with col_img1:
+                # Layout reorganizado: gráfico no centro, imagens nas laterais
+                col_img_left, col_chart, col_img_right = st.columns([1, 2, 1])
+                
+                with col_img_left:
                     sprite_url_1 = data_1["sprites"]["front_default"]
-                    st.image(sprite_url_1, width= 500, caption=data_1["name"].capitalize())
-                with col_img2:
+                    st.image(sprite_url_1, width=400, caption=data_1["name"].capitalize())
+                
+                with col_chart:
+                    #exibe o grafico
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with col_img_right:
                     sprite_url_2 = data_2["sprites"]["front_default"]
-                    st.image(sprite_url_2, width= 500, caption=data_2["name"].capitalize())
+                    st.image(sprite_url_2, width=400, caption=data_2["name"].capitalize())
 
 #Distribuição de Tipos de Pokémon
 elif funcionalidades[selected_feature] == "analise_individual":
