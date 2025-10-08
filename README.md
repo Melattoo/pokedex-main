@@ -24,16 +24,15 @@ O objetivo é transformar dados brutos da API em **insights visuais intuitivos e
 - **Funcionalidade:** Comparar estatísticas de múltiplos Pokémon selecionados  
 - **Insight:** Permite avaliar o equilíbrio e o estilo de combate de cada Pokémon
 
-
-### 🧬 2. **Distribuição de Tipos de Pokémon**
-- **Gráfico:** Barra ou Pizza  
-- **Descrição:** Mostra quantos Pokémon pertencem a cada tipo (Fogo, Água, Grama, etc.)  
-- **Insight:** Identificar os tipos mais e menos comuns  
-
-### 🌟 3.**Análise Individual de Pokémon**
+### 🌟 2.**Análise Individual de Pokémon**
 - **Gráfico:** Vários gráficos menores e texto informativo. O gráfico principal pode ser um Radar (Spider Chart) ou um gráfico de barras comparando os atributos do Pokémon selecionado com a média geral de todos os Pokémon, ou da sua própria geração/tipo. 
 - **Análise:** Uma visão completa das características de um Pokémon específico, escolhido pelo usuário. A análise deve compilar e exibir dados como, dados basicos (nome, numero da Pokédex), estatísticas detalhadas (os atributos base (HP, Ataque, Defesa, etc.)), habilidades com uma lista das habilidades do Pokémon, com uma breve descrição de cada uma e a sua cadeia evolutiva. 
 - **Insight:** O usuário obtém uma compreensão profunda e imediata de um Pokémon em particular. 
+
+### 🧬 3. **Distribuição de Tipos de Pokémon**
+- **Gráfico:** Barra ou Pizza  
+- **Descrição:** Mostra quantos Pokémon pertencem a cada tipo (Fogo, Água, Grama, etc.)  
+- **Insight:** Identificar os tipos mais e menos comuns  
 
 ### ⚖️ 4. **Peso x Altura - Relação de Proporções**
 - **Gráfico:** Dispersão (Scatter Plot)  
