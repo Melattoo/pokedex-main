@@ -1,4 +1,4 @@
-#!/home/melatto/Documentos/pokedex/venv/bin/python
+#!/home/melatto/Documentos/pokedex-main/venv/bin/python3.11
 # -*- coding: utf-8 -*-
 import re
 import sys
