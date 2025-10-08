@@ -1,4 +1,4 @@
-streamlit==1.33.1      # versão mais recente compatível com numpy 2.x
+streamlit==1.50.0     # versão compatível com Python 3.13
 numpy>=1.26,<3
 pandas>=2.3,<3
 altair==5.5.0
