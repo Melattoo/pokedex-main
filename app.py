@@ -146,4 +146,276 @@ if funcionalidades[selected_feature] == "comparacao_status":
 #Distribuição de Tipos de Pokémon
 elif funcionalidades[selected_feature] == "analise_individual":
     st.title("🌟 Análise Individual de Pokémon")
-    st.write("Em breve, aqui você verá uma analise individual do Pokémon que escolher!")
+    
+    # Função para buscar descrição em português
+    def buscar_descricao_pt(species_data):
+        """Busca a melhor descrição em português disponível"""
+        if not species_data:
+            return "Descrição não disponível para este Pokémon."
+        
+        versoes_prioridade = [
+            "ultra-sun", "ultra-moon", "sun", "moon",
+            "omega-ruby", "alpha-sapphire", "x", "y",
+            "black-2", "white-2", "black", "white"
+        ]
+        
+        for entry in species_data.get("flavor_text_entries", []):
+            if entry["language"]["name"] == "pt" and entry["version"]["name"] in versoes_prioridade:
+                return entry["flavor_text"].replace("\n", " ").replace("\x0c", " ")
+        
+        for entry in species_data.get("flavor_text_entries", []):
+            if entry["language"]["name"] == "pt":
+                return entry["flavor_text"].replace("\n", " ").replace("\x0c", " ")
+        
+        for entry in species_data.get("flavor_text_entries", []):
+            if entry["language"]["name"] == "en":
+                return f"(Em inglês) {entry['flavor_text'].replace(chr(12), ' ')}"
+        
+        return "Descrição não disponível para este Pokémon."
+    
+    # Input do Pokémon
+    pokemon_nome = st.text_input(
+        "Digite o nome ou número do Pokémon:",
+        placeholder="Ex: pikachu, charmander, 25",
+        key="individual_pokemon"
+    )
+    
+    # Botões de Pokémon populares
+    st.markdown("**🎮 Ou escolha um Pokémon popular:**")
+    
+    col_pop1, col_pop2, col_pop3, col_pop4 = st.columns(4)
+    with col_pop1:
+        if st.button("⚡ Pikachu", key="pop_pikachu", use_container_width=True):
+            pokemon_nome = "pikachu"
+    with col_pop2:
+        if st.button("🔥 Charmander", key="pop_charmander", use_container_width=True):
+            pokemon_nome = "charmander"
+    with col_pop3:
+        if st.button("🌿 Bulbasaur", key="pop_bulbasaur", use_container_width=True):
+            pokemon_nome = "bulbasaur"
+    with col_pop4:
+        if st.button("💧 Squirtle", key="pop_squirtle", use_container_width=True):
+            pokemon_nome = "squirtle"
+    
+    col_pop5, col_pop6, col_pop7, col_pop8 = st.columns(4)
+    with col_pop5:
+        if st.button("🐶 Eevee", key="pop_eevee", use_container_width=True):
+            pokemon_nome = "eevee"
+    with col_pop6:
+        if st.button("🧬 Mewtwo", key="pop_mewtwo", use_container_width=True):
+            pokemon_nome = "mewtwo"
+    with col_pop7:
+        if st.button("🐉 Dragonite", key="pop_dragonite", use_container_width=True):
+            pokemon_nome = "dragonite"
+    with col_pop8:
+        if st.button("👻 Gengar", key="pop_gengar", use_container_width=True):
+            pokemon_nome = "gengar"
+    
+    st.markdown("---")
+    
+    # Botão de análise principal
+    analisar_clicado = st.button("🔍 Analisar Pokémon", key="btn_analisar", use_container_width=True)
+    
+    if analisar_clicado or (pokemon_nome and 'pokemon_data' not in locals() and st.session_state.get('auto_analisar', False)):
+        # Força análise quando clica nos botões
+        if not analisar_clicado and pokemon_nome:
+            # Caso o botão popular foi clicado, recria o estado
+            pass
+        
+        if not pokemon_nome:
+            st.warning("⚠️ Por favor, digite o nome ou número de um Pokémon.")
+        else:
+            with st.spinner(f"🔄 Buscando dados de {pokemon_nome}..."):
+                pokemon_data = get_pokemon_data(pokemon_nome)
+                
+                if not pokemon_data:
+                    st.error(f"❌ Pokémon '{pokemon_nome}' não encontrado.")
+                else:
+                    # Busca dados da espécie
+                    species_url = f"https://pokeapi.co/api/v2/pokemon-species/{pokemon_data['id']}"
+                    try:
+                        species_response = requests.get(species_url)
+                        species_data = species_response.json() if species_response.status_code == 200 else None
+                    except:
+                        species_data = None
+                    
+                    tipo_principal, cor_tipo = get_pokemon_type_and_color(pokemon_data)
+                    
+                    # Layout em duas colunas
+                    col_left, col_right = st.columns([1, 1])
+                    
+                    # COLUNA ESQUERDA
+                    with col_left:
+                        st.markdown(f"## #{pokemon_data['id']} - {pokemon_data['name'].capitalize()}")
+                        
+                        try:
+                            imagem_url = pokemon_data["sprites"]["other"]["official-artwork"]["front_default"]
+                        except:
+                            imagem_url = pokemon_data["sprites"]["front_default"]
+                        
+                        st.image(imagem_url, width=280)
+                        
+                        tipos = [t["type"]["name"].capitalize() for t in pokemon_data["types"]]
+                        tipos_html = " ".join([f'<span style="background-color: {POKEMON_TYPE_COLORS.get(t.lower(), "#777777")}; padding: 4px 12px; border-radius: 20px; margin-right: 8px; color: white; font-weight: bold;">{t}</span>' for t in tipos])
+                        st.markdown(f"**Tipo(s):** {tipos_html}", unsafe_allow_html=True)
+                        
+                        altura_m = pokemon_data["height"] / 10
+                        peso_kg = pokemon_data["weight"] / 10
+                        
+                        col_altura, col_peso = st.columns(2)
+                        with col_altura:
+                            st.metric("📏 Altura", f"{altura_m:.1f} m")
+                        with col_peso:
+                            st.metric("⚖️ Peso", f"{peso_kg:.1f} kg")
+                        
+                        st.subheader("✨ Habilidades")
+                        for ability in pokemon_data["abilities"]:
+                            if ability["is_hidden"]:
+                                st.markdown(f"- 🔮 **{ability['ability']['name'].capitalize()}** *(Oculta)*")
+                            else:
+                                st.markdown(f"- ⚡ {ability['ability']['name'].capitalize()}")
+                        
+                        if species_data:
+                            st.subheader("📖 Descrição")
+                            descricao = buscar_descricao_pt(species_data)
+                            st.info(f"💬 {descricao}")
+                            
+                            for genus in species_data.get("genera", []):
+                                if genus["language"]["name"] == "pt":
+                                    st.markdown(f"**📌 Categoria:** {genus['genus']}")
+                                    break
+                    
+                    # COLUNA DIREITA
+                    with col_right:
+                        stats = {
+                            "HP": pokemon_data["stats"][0]["base_stat"],
+                            "Ataque": pokemon_data["stats"][1]["base_stat"],
+                            "Defesa": pokemon_data["stats"][2]["base_stat"],
+                            "Ataque Esp": pokemon_data["stats"][3]["base_stat"],
+                            "Defesa Esp": pokemon_data["stats"][4]["base_stat"],
+                            "Velocidade": pokemon_data["stats"][5]["base_stat"]
+                        }
+                        
+                        max_stat = max(stats.values())
+                        
+                        df_radar = pd.DataFrame({
+                            "Atributos": list(stats.keys()),
+                            "Valor": list(stats.values())
+                        })
+                        
+                        fig_radar = px.line_polar(
+                            df_radar,
+                            r="Valor",
+                            theta="Atributos",
+                            line_close=True,
+                            title="📊 Atributos Base",
+                            range_r=[0, max_stat + 30],
+                            template="plotly_dark"
+                        )
+                        
+                        fig_radar.update_traces(
+                            fill="toself",
+                            line_color=cor_tipo,
+                            line_width=3,
+                            marker=dict(size=6, color=cor_tipo)
+                        )
+                        
+                        # CORREÇÃO: Removeu 'weight' do tickfont
+                        fig_radar.update_layout(
+                            polar=dict(
+                                radialaxis=dict(
+                                    visible=True,
+                                    range=[0, max_stat + 30],
+                                    tickfont=dict(size=10),
+                                    gridcolor="rgba(255,255,255,0.2)"
+                                ),
+                                angularaxis=dict(
+                                    tickfont=dict(size=11),
+                                    gridcolor="rgba(255,255,255,0.2)"
+                                )
+                            ),
+                            height=450,
+                            margin=dict(l=80, r=80, t=60, b=40),
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            plot_bgcolor="rgba(0,0,0,0)"
+                        )
+                        
+                        st.plotly_chart(fig_radar, use_container_width=True)
+                        
+                        col_stat1, col_stat2, col_stat3 = st.columns(3)
+                        with col_stat1:
+                            st.metric("❤️ HP", stats["HP"])
+                            st.metric("⚔️ Ataque", stats["Ataque"])
+                        with col_stat2:
+                            st.metric("🛡️ Defesa", stats["Defesa"])
+                            st.metric("🔮 Ataque Esp", stats["Ataque Esp"])
+                        with col_stat3:
+                            st.metric("✨ Defesa Esp", stats["Defesa Esp"])
+                            st.metric("⚡ Velocidade", stats["Velocidade"])
+                    
+                    st.divider()
+                    
+                    # GRÁFICO DE BARRAS
+                    st.subheader("📈 Comparativo de Atributos")
+                    
+                    df_stats = pd.DataFrame({
+                        "Atributo": list(stats.keys()),
+                        "Valor": list(stats.values())
+                    }).sort_values("Valor", ascending=True)
+                    
+                    fig_bars = px.bar(
+                        df_stats,
+                        x="Valor",
+                        y="Atributo",
+                        orientation='h',
+                        text="Valor",
+                        color="Valor",
+                        color_continuous_scale=["#2ecc71", "#f1c40f", "#e74c3c"]
+                    )
+                    
+                    fig_bars.update_traces(textposition="outside", textfont=dict(size=12))
+                    fig_bars.update_layout(
+                        height=400,
+                        xaxis=dict(title="Valor Base", range=[0, max_stat + 20]),
+                        yaxis=dict(title="", categoryorder="total ascending"),
+                        showlegend=False,
+                        margin=dict(l=10, r=40, t=10, b=20)
+                    )
+                    
+                    st.plotly_chart(fig_bars, use_container_width=True)
+                    
+                    # CADEIA EVOLUTIVA
+                    st.subheader("🔄 Cadeia Evolutiva")
+                    
+                    if species_data and "evolution_chain" in species_data:
+                        try:
+                            evolution_url = species_data["evolution_chain"]["url"]
+                            evo_response = requests.get(evolution_url)
+                            evolution_data = evo_response.json() if evo_response.status_code == 200 else None
+                            
+                            if evolution_data:
+                                evolucoes = []
+                                
+                                def extrair_evolucoes(chain):
+                                    evolucoes.append(chain["species"]["name"])
+                                    for evolve in chain.get("evolves_to", []):
+                                        extrair_evolucoes(evolve)
+                                
+                                extrair_evolucoes(evolution_data["chain"])
+                                
+                                if len(evolucoes) > 1:
+                                    cols = st.columns(len(evolucoes))
+                                    for idx, evo in enumerate(evolucoes):
+                                        with cols[idx]:
+                                            evo_data = get_pokemon_data(evo)
+                                            if evo_data:
+                                                try:
+                                                    evo_img = evo_data["sprites"]["other"]["official-artwork"]["front_default"]
+                                                except:
+                                                    evo_img = evo_data["sprites"]["front_default"]
+                                                st.image(evo_img, width=120)
+                                                st.caption(evo.capitalize())
+                                else:
+                                    st.info("🌟 Este Pokémon não tem evoluções conhecidas.")
+                        except:
+                            st.write("❌ Erro ao carregar cadeia evolutiva.")
